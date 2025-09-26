@@ -166,6 +166,9 @@ class HidroWebClient:
         if not station_code:
             raise HidroWebValidationError("Station code is required")
         
+        if not validate_station_code(station_code):
+            raise HidroWebValidationError(f"Invalid station code format: {station_code}")
+        
         try:
             response = self._make_request(f'/estacoes/{station_code}')
             return Station(response)
