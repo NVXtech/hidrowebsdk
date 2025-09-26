@@ -1,0 +1,40 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "hidrowebsdk"
+version = "0.1.0"
+description = "Python SDK to communicate with ANA's HidroWeb API for hydrological and pluviometric data"
+authors = [
+    {name = "Julio Werner", email = "julio.werner@nvxtech.com.br"}
+]
+readme = "README.md"
+requires-python = ">=3.11"
+license = {text = "MIT"}
+keywords = ["hydrology", "water", "api", "brazil", "ana", "hidroweb"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Hydrology",
+]
+dependencies = [
+    "httpx",
+    "pandas",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "pytest-asyncio",
+]
+
+[project.urls]
+Homepage = "https://github.com/yourusername/hidrowebsdk"
+Repository = "https://github.com/yourusername/hidrowebsdk"
+Issues = "https://github.com/yourusername/hidrowebsdk/issues"
