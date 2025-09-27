@@ -1,5 +1,4 @@
 
-hidrowebsdk/docs/index.rst
 Bem-vindo à documentação do HidroWebSDK!
 =========================================
 
