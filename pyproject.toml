@@ -32,6 +32,8 @@ dependencies = [
 dev = [
     "pytest",
     "pytest-asyncio",
+    "sphinx",
+    "sphinx-rtd-theme",
 ]
 
 [project.urls]
