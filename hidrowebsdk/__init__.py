@@ -1,11 +1,16 @@
 """
-HidroWebSDK - Python SDK for ANA's HidroWeb API
+HidroWebSDK - SDK Python para a API Hidroweb da ANA
+===================================================
 
-This package provides a simple interface to communicate with the Brazilian
-National Water Agency (ANA) HidroWeb API to access hydrological and
-pluviometric data from monitoring stations.
+Este pacote fornece uma interface simples para se comunicar com a API Hidroweb da Agência Nacional de Águas (ANA) e acessar os dados hidrológicos disponíveis.
 
-Example:
+.. versionadded:: 0.1.0
+
+Exemplo
+-------
+
+.. code-block:: python
+
     >>> from hidrowebsdk import Client
     >>> client = Client()
 """
