@@ -1,0 +1,254 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="pt-BR" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>hidrowebsdk &mdash; Documentação hidrowebsdk 0.1.0</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=2346ddef"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="_static/translations.js?v=71a39b36"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Índice" href="genindex.html" />
+    <link rel="search" title="Buscar" href="search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            hidrowebsdk
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Pesquisar documentos" aria-label="Pesquisar documentos" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Menu de navegação">
+              <!-- Local TOC -->
+              <div class="local-toc"><ul>
+<li><a class="reference internal" href="#">hidrowebsdk</a><ul>
+<li><a class="reference internal" href="#hidrowebsdk-sdk-python-para-a-api-hidroweb-da-ana">HidroWebSDK - SDK Python para a API Hidroweb da ANA</a><ul>
+<li><a class="reference internal" href="#exemplo">Exemplo</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#hidrowebsdk.Client"><code class="docutils literal notranslate"><span class="pre">Client</span></code></a><ul>
+<li><a class="reference internal" href="#hidrowebsdk.Client.authenticate"><code class="docutils literal notranslate"><span class="pre">Client.authenticate()</span></code></a></li>
+<li><a class="reference internal" href="#hidrowebsdk.Client.bacias"><code class="docutils literal notranslate"><span class="pre">Client.bacias()</span></code></a></li>
+<li><a class="reference internal" href="#hidrowebsdk.Client.close"><code class="docutils literal notranslate"><span class="pre">Client.close()</span></code></a></li>
+<li><a class="reference internal" href="#hidrowebsdk.Client.entidades"><code class="docutils literal notranslate"><span class="pre">Client.entidades()</span></code></a></li>
+<li><a class="reference internal" href="#hidrowebsdk.Client.estacoes"><code class="docutils literal notranslate"><span class="pre">Client.estacoes()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Menu de navegação móvel" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">hidrowebsdk</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Navegação da página">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">hidrowebsdk</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/hidrowebsdk.rst.txt" rel="nofollow"> Ver código-fonte da página</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-hidrowebsdk">
+<span id="hidrowebsdk"></span><h1>hidrowebsdk<a class="headerlink" href="#module-hidrowebsdk" title="Link para este cabeçalho"></a></h1>
+<section id="hidrowebsdk-sdk-python-para-a-api-hidroweb-da-ana">
+<h2>HidroWebSDK - SDK Python para a API Hidroweb da ANA<a class="headerlink" href="#hidrowebsdk-sdk-python-para-a-api-hidroweb-da-ana" title="Link para este cabeçalho"></a></h2>
+<p>Este pacote fornece uma interface simples para se comunicar com a API Hidroweb da Agência Nacional de Águas (ANA) e acessar os dados hidrológicos disponíveis.</p>
+<div class="versionadded">
+<p><span class="versionmodified added">Adicionado na versão 0.1.0.</span></p>
+</div>
+<section id="exemplo">
+<h3>Exemplo<a class="headerlink" href="#exemplo" title="Link para este cabeçalho"></a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">hidrowebsdk</span><span class="w"> </span><span class="kn">import</span> <span class="n">Client</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">client</span> <span class="o">=</span> <span class="n">Client</span><span class="p">()</span>
+</pre></div>
+</div>
+</section>
+</section>
+<dl class="py class">
+<dt class="sig sig-object py" id="hidrowebsdk.Client">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">hidrowebsdk.</span></span><span class="sig-name descname"><span class="pre">Client</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">user</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'user'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">password</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'password'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/hidrowebsdk/client.html#Client"><span class="viewcode-link"><span class="pre">[código-fonte]</span></span></a><a class="headerlink" href="#hidrowebsdk.Client" title="Link para esta definição"></a></dt>
+<dd><p>Base: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Classe principal do cliente para interagir com a API Hidroweb da ANA.</p>
+<p>Esta classe lida com a autenticação e fornece métodos para buscar vários
+tipos de dados da API Hidroweb, como informações de bacias, entidades
+e inventários de estações.</p>
+<section id="atributos">
+<h2>Atributos<a class="headerlink" href="#atributos" title="Link para este cabeçalho"></a></h2>
+<dl class="simple">
+<dt>user<span class="classifier">str</span></dt><dd><p>O nome de usuário para autenticação da API.</p>
+</dd>
+<dt>password<span class="classifier">str</span></dt><dd><p>A senha para autenticação da API.</p>
+</dd>
+<dt>client<span class="classifier">httpx.AsyncClient</span></dt><dd><p>O cliente HTTP usado para fazer solicitações.</p>
+</dd>
+<dt>token<span class="classifier">str ou None</span></dt><dd><p>O token de autenticação obtido após o login.</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="hidrowebsdk.Client.authenticate">
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">authenticate</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/hidrowebsdk/client.html#Client.authenticate"><span class="viewcode-link"><span class="pre">[código-fonte]</span></span></a><a class="headerlink" href="#hidrowebsdk.Client.authenticate" title="Link para esta definição"></a></dt>
+<dd><p>Autentica com a API Hidroweb e obtém um token de acesso.</p>
+<p>Este método envia uma solicitação GET para o endpoint OAuth com as credenciais do usuário
+para recuperar um token de autenticação, que é armazenado no cliente.</p>
+<section id="excecoes">
+<h3>Exceções<a class="headerlink" href="#excecoes" title="Link para este cabeçalho"></a></h3>
+<blockquote>
+<div><p>Se a autenticação falhar ou nenhum token for retornado.</p>
+</div></blockquote>
+</section>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="hidrowebsdk.Client.bacias">
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">bacias</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">codigo</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">last_update_start</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">datetime</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">last_update_end</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">datetime</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">DataFrame</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="reference internal" href="_modules/hidrowebsdk/client.html#Client.bacias"><span class="viewcode-link"><span class="pre">[código-fonte]</span></span></a><a class="headerlink" href="#hidrowebsdk.Client.bacias" title="Link para esta definição"></a></dt>
+<dd><p>Busca informações sobre bacias hidrológicas.</p>
+<section id="parametros">
+<h3>Parâmetros<a class="headerlink" href="#parametros" title="Link para este cabeçalho"></a></h3>
+<dl class="simple">
+<dt>codigo<span class="classifier">int, opcional</span></dt><dd><p>Código da bacia para filtrar resultados.</p>
+</dd>
+<dt>last_update_start<span class="classifier">datetime, opcional</span></dt><dd><p>Data de início para filtro de última atualização.</p>
+</dd>
+<dt>last_update_end<span class="classifier">datetime, opcional</span></dt><dd><p>Data de fim para filtro de última atualização.</p>
+</dd>
+</dl>
+</section>
+<section id="retorna">
+<h3>Retorna<a class="headerlink" href="#retorna" title="Link para este cabeçalho"></a></h3>
+<dl class="simple">
+<dt>pd.DataFrame ou None</dt><dd><p>DataFrame contendo informações da bacia, ou None se não houver dados.</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="hidrowebsdk.Client.close">
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">close</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/hidrowebsdk/client.html#Client.close"><span class="viewcode-link"><span class="pre">[código-fonte]</span></span></a><a class="headerlink" href="#hidrowebsdk.Client.close" title="Link para esta definição"></a></dt>
+<dd><p>Fecha a sessão do cliente HTTP.</p>
+<p>Este método deve ser chamado quando o cliente não for mais necessário
+para fechar adequadamente as conexões HTTP subjacentes.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="hidrowebsdk.Client.entidades">
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">entidades</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">codigo</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">last_update_start</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">datetime</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">last_update_end</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">datetime</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">DataFrame</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="reference internal" href="_modules/hidrowebsdk/client.html#Client.entidades"><span class="viewcode-link"><span class="pre">[código-fonte]</span></span></a><a class="headerlink" href="#hidrowebsdk.Client.entidades" title="Link para esta definição"></a></dt>
+<dd><p>Busca informações sobre entidades.</p>
+<section id="id1">
+<h3>Parâmetros<a class="headerlink" href="#id1" title="Link para este cabeçalho"></a></h3>
+<dl class="simple">
+<dt>codigo<span class="classifier">int, opcional</span></dt><dd><p>Código da entidade para filtrar resultados.</p>
+</dd>
+<dt>last_update_start<span class="classifier">datetime, opcional</span></dt><dd><p>Data de início para filtro de última atualização (aaaa-MM-dd).</p>
+</dd>
+<dt>last_update_end<span class="classifier">datetime, opcional</span></dt><dd><p>Data de fim para filtro de última atualização (aaaa-MM-dd).</p>
+</dd>
+</dl>
+</section>
+<section id="id2">
+<h3>Retorna<a class="headerlink" href="#id2" title="Link para este cabeçalho"></a></h3>
+<dl class="simple">
+<dt>pd.DataFrame ou None</dt><dd><p>DataFrame contendo informações da entidade, ou None se não houver dados.</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="hidrowebsdk.Client.estacoes">
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">estacoes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">codigo</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">last_update_start</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">datetime</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">last_update_end</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">datetime</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">state</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">basin_code</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">DataFrame</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="reference internal" href="_modules/hidrowebsdk/client.html#Client.estacoes"><span class="viewcode-link"><span class="pre">[código-fonte]</span></span></a><a class="headerlink" href="#hidrowebsdk.Client.estacoes" title="Link para esta definição"></a></dt>
+<dd><p>Busca inventário de estações de monitoramento.</p>
+<section id="id3">
+<h3>Parâmetros<a class="headerlink" href="#id3" title="Link para este cabeçalho"></a></h3>
+<dl class="simple">
+<dt>codigo<span class="classifier">int, opcional</span></dt><dd><p>Código da estação para filtrar resultados.</p>
+</dd>
+<dt>last_update_start<span class="classifier">datetime, opcional</span></dt><dd><p>Data de início para filtro de última atualização (aaaa-MM-dd).</p>
+</dd>
+<dt>last_update_end<span class="classifier">datetime, opcional</span></dt><dd><p>Data de fim para filtro de última atualização (aaaa-MM-dd).</p>
+</dd>
+<dt>state<span class="classifier">str, opcional</span></dt><dd><p>Estado (Unidade Federativa) para filtrar resultados.</p>
+</dd>
+<dt>basin_code<span class="classifier">int, opcional</span></dt><dd><p>Código da bacia para filtrar resultados.</p>
+</dd>
+</dl>
+</section>
+<section id="id4">
+<h3>Retorna<a class="headerlink" href="#id4" title="Link para este cabeçalho"></a></h3>
+<dl class="simple">
+<dt>pd.DataFrame ou None</dt><dd><p>DataFrame contendo inventário da estação, ou None se não houver dados.</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
+
+</section>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Direitos autorais 2023, Julio Werner.</p>
+  </div>
+
+  Compilado com <a href="https://www.sphinx-doc.org/">Sphinx</a> usando um
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">tema</a>
+    fornecido por <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

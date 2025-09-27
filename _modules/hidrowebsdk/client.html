@@ -1,0 +1,499 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="pt-BR" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>hidrowebsdk.client &mdash; Documentação hidrowebsdk 0.1.0</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=2346ddef"></script>
+      <script src="../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../../_static/translations.js?v=71a39b36"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Índice" href="../../genindex.html" />
+    <link rel="search" title="Buscar" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            hidrowebsdk
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Pesquisar documentos" aria-label="Pesquisar documentos" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Menu de navegação">
+              <!-- Local TOC -->
+              <div class="local-toc"></div>
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Menu de navegação móvel" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">hidrowebsdk</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Navegação da página">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Código do módulo</a></li>
+      <li class="breadcrumb-item active">hidrowebsdk.client</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Código-fonte para hidrowebsdk.client</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Cliente para a API Hidroweb da Agência Nacional de Águas (ANA).</span>
+
+<span class="sd">Este módulo fornece classes e funções para interagir com a API Hidroweb da ANA,</span>
+<span class="sd">permitindo acesso a dados hidrológicos e pluviométricos de estações de monitoramento.</span>
+
+<span class="sd">Para mais informações sobre a API, consulte:</span>
+<span class="sd">https://www.ana.gov.br/hidrowebservice/swagger-ui/index.html#/</span>
+
+<span class="sd">Classes</span>
+<span class="sd">-------</span>
+<span class="sd">ApiResponse</span>
+<span class="sd">    Representa uma resposta da API Hidroweb.</span>
+<span class="sd">Client</span>
+<span class="sd">    Classe principal do cliente para interagir com a API.</span>
+
+<span class="sd">Funções</span>
+<span class="sd">---------</span>
+<span class="sd">validate_df(df, required_columns)</span>
+<span class="sd">    Valida se um DataFrame contém as colunas necessárias.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">httpx</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">datetime</span>
+
+
+<span class="n">BASE_URL</span> <span class="o">=</span> <span class="s2">&quot;https://www.ana.gov.br/hidrowebservice/EstacoesTelemetricas/&quot;</span>
+<span class="n">HIDROWEB_USER</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&quot;HIDROWEB_USER&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="s2">&quot;user&quot;</span>
+<span class="n">HIDROWEB_PASSWORD</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&quot;HIDROWEB_PASSWORD&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="s2">&quot;password&quot;</span>
+
+<span class="n">ParamsType</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">|</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">datetime</span><span class="p">]</span> <span class="o">|</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span>
+<span class="p">)</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">ApiResponse</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Representa uma resposta da API Hidroweb.</span>
+
+<span class="sd">    Esta classe encapsula a resposta HTTP e fornece métodos convenientes</span>
+<span class="sd">    para acessar os dados retornados pela API.</span>
+
+<span class="sd">    Atributos</span>
+<span class="sd">    ----------</span>
+<span class="sd">    status_code : int</span>
+<span class="sd">        O código de status HTTP da resposta.</span>
+<span class="sd">    json : dict</span>
+<span class="sd">        A resposta JSON completa da API.</span>
+<span class="sd">    status : str ou None</span>
+<span class="sd">        O campo status da resposta JSON.</span>
+<span class="sd">    message : str ou None</span>
+<span class="sd">        O campo message da resposta JSON.</span>
+<span class="sd">    items : list, dict, ou None</span>
+<span class="sd">        O campo items da resposta JSON, contendo os dados reais.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">response</span><span class="p">:</span> <span class="n">httpx</span><span class="o">.</span><span class="n">Response</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Inicializa ApiResponse com um objeto httpx.Response.</span>
+
+<span class="sd">        Parâmetros</span>
+<span class="sd">        ----------</span>
+<span class="sd">        response : httpx.Response</span>
+<span class="sd">            A resposta HTTP da API.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">status_code</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">json</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">status</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">json</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;status&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">message</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">json</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;message&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">items</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">json</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;items&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">is_success</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Verifica se a resposta indica uma solicitação bem-sucedida.</span>
+
+<span class="sd">        Retorna</span>
+<span class="sd">        -------</span>
+<span class="sd">        bool</span>
+<span class="sd">            True se status_code estiver entre 200 e 299, False caso contrário.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="mi">200</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">status_code</span> <span class="o">&lt;</span> <span class="mi">300</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_items</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span> <span class="o">|</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Obtém os items da resposta.</span>
+
+<span class="sd">        Retorna</span>
+<span class="sd">        -------</span>
+<span class="sd">        list, dict, ou None</span>
+<span class="sd">            O campo items da resposta JSON.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">items</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">items_as_dataframe</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Converte os items para um DataFrame do pandas.</span>
+
+<span class="sd">        Retorna</span>
+<span class="sd">        -------</span>
+<span class="sd">        pd.DataFrame</span>
+<span class="sd">            Um DataFrame contendo os dados dos items. Se items for uma lista de dicionários,</span>
+<span class="sd">            cada dicionário se torna uma linha. Se items for um único dicionário, torna-se uma única linha.</span>
+<span class="sd">            Se items for None ou não for lista/dicionário, retorna um DataFrame vazio.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">items</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">items</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">items</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">items</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">validate_df</span><span class="p">(</span><span class="n">df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">required_columns</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Valida se o DataFrame contém as colunas necessárias.</span>
+
+<span class="sd">    Parâmetros</span>
+<span class="sd">    ----------</span>
+<span class="sd">    df : pd.DataFrame</span>
+<span class="sd">        O DataFrame a ser validado.</span>
+<span class="sd">    required_columns : list de str</span>
+<span class="sd">        Lista de nomes de colunas que devem estar presentes no DataFrame.</span>
+
+<span class="sd">    Retorna</span>
+<span class="sd">    -------</span>
+<span class="sd">    bool</span>
+<span class="sd">        True se todas as colunas necessárias estiverem presentes.</span>
+
+<span class="sd">        Exceções</span>
+<span class="sd">        --------</span>
+<span class="sd">        ValueError</span>
+<span class="sd">            Se alguma coluna necessária estiver faltando.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+    <span class="n">missing_columns</span> <span class="o">=</span> <span class="p">[</span><span class="n">col</span> <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">required_columns</span> <span class="k">if</span> <span class="n">col</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">missing_columns</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Missing required columns: </span><span class="si">{</span><span class="n">missing_columns</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="kc">True</span>
+
+
+<div class="viewcode-block" id="Client">
+<a class="viewcode-back" href="../../hidrowebsdk.html#hidrowebsdk.Client">[documentos]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">Client</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Classe principal do cliente para interagir com a API Hidroweb da ANA.</span>
+
+<span class="sd">    Esta classe lida com a autenticação e fornece métodos para buscar vários</span>
+<span class="sd">    tipos de dados da API Hidroweb, como informações de bacias, entidades</span>
+<span class="sd">    e inventários de estações.</span>
+
+<span class="sd">    Atributos</span>
+<span class="sd">    ----------</span>
+<span class="sd">    user : str</span>
+<span class="sd">        O nome de usuário para autenticação da API.</span>
+<span class="sd">    password : str</span>
+<span class="sd">        A senha para autenticação da API.</span>
+<span class="sd">    client : httpx.AsyncClient</span>
+<span class="sd">        O cliente HTTP usado para fazer solicitações.</span>
+<span class="sd">    token : str ou None</span>
+<span class="sd">        O token de autenticação obtido após o login.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">user</span><span class="o">=</span><span class="n">HIDROWEB_USER</span><span class="p">,</span> <span class="n">password</span><span class="o">=</span><span class="n">HIDROWEB_PASSWORD</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Inicializa o Cliente com credenciais de usuário.</span>
+
+<span class="sd">        Parâmetros</span>
+<span class="sd">        ----------</span>
+<span class="sd">        user : str, opcional</span>
+<span class="sd">            Nome de usuário para autenticação da API. Padrão para a variável de ambiente HIDROWEB_USER.</span>
+<span class="sd">        password : str, opcional</span>
+<span class="sd">            Senha para autenticação da API. Padrão para a variável de ambiente HIDROWEB_PASSWORD.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">user</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">user</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">password</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">password</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">client</span> <span class="o">=</span> <span class="n">httpx</span><span class="o">.</span><span class="n">AsyncClient</span><span class="p">(</span><span class="n">base_url</span><span class="o">=</span><span class="n">BASE_URL</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">token</span> <span class="o">=</span> <span class="kc">None</span>
+
+<div class="viewcode-block" id="Client.authenticate">
+<a class="viewcode-back" href="../../hidrowebsdk.html#hidrowebsdk.Client.authenticate">[documentos]</a>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">authenticate</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Autentica com a API Hidroweb e obtém um token de acesso.</span>
+
+<span class="sd">        Este método envia uma solicitação GET para o endpoint OAuth com as credenciais do usuário</span>
+<span class="sd">        para recuperar um token de autenticação, que é armazenado no cliente.</span>
+
+<span class="sd">        Exceções</span>
+<span class="sd">        --------</span>
+<span class="sd">            Se a autenticação falhar ou nenhum token for retornado.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="s2">&quot;OAUth/v1&quot;</span>
+        <span class="n">headers</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;Identificador&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">user</span><span class="p">,</span> <span class="s2">&quot;Senha&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">password</span><span class="p">}</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="n">headers</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">!=</span> <span class="mi">200</span><span class="p">:</span>
+            <span class="n">message</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;message&quot;</span><span class="p">,</span> <span class="s2">&quot;No message provided&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Authentication failed: (</span><span class="si">{</span><span class="n">response</span><span class="o">.</span><span class="n">status_code</span><span class="si">}</span><span class="s2">) </span><span class="si">{</span><span class="n">message</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+        <span class="n">token</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;items&quot;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;tokenautenticacao&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">token</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Authentication token not found in response&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">token</span> <span class="o">=</span> <span class="n">token</span></div>
+
+
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">_make_request</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">method</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;GET&quot;</span><span class="p">,</span> <span class="n">endpoint_suffix</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Faz uma solicitação autenticada para a API Hidroweb.</span>
+
+<span class="sd">        Este é um método interno que lida com a autenticação e tentativas em erros 401.</span>
+
+<span class="sd">        Parâmetros</span>
+<span class="sd">        ----------</span>
+<span class="sd">        method : str, opcional</span>
+<span class="sd">            Método HTTP (ex.: &#39;GET&#39;). Padrão para &#39;GET&#39;.</span>
+<span class="sd">        endpoint_suffix : str, opcional</span>
+<span class="sd">            O sufixo do endpoint da API a ser anexado à URL base.</span>
+<span class="sd">        **kwargs</span>
+<span class="sd">            Argumentos adicionais passados para a solicitação HTTP.</span>
+
+<span class="sd">        Retorna</span>
+<span class="sd">        -------</span>
+<span class="sd">        httpx.Response</span>
+<span class="sd">            A resposta HTTP da API.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="n">endpoint_suffix</span>
+        <span class="n">headers</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;headers&quot;</span><span class="p">,</span> <span class="p">{})</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">token</span><span class="p">:</span>
+            <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">authenticate</span><span class="p">()</span>
+        <span class="n">headers</span><span class="p">[</span><span class="s2">&quot;Authorization&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Bearer </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">token</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">request</span><span class="p">(</span><span class="n">method</span><span class="p">,</span> <span class="n">url</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="n">headers</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">401</span><span class="p">:</span>
+            <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">authenticate</span><span class="p">()</span>
+            <span class="n">headers</span><span class="p">[</span><span class="s2">&quot;Authorization&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Bearer </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">token</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="n">response</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">request</span><span class="p">(</span><span class="n">method</span><span class="p">,</span> <span class="n">url</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="n">headers</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">response</span>
+
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">_df_from_api</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">endpoint_suffix</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">params</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">object</span><span class="p">,</span> <span class="nb">object</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Busca dados da API e retorna como um DataFrame.</span>
+
+<span class="sd">        Este é um método interno usado pelos métodos públicos para recuperar dados.</span>
+
+<span class="sd">        Parâmetros</span>
+<span class="sd">        ----------</span>
+<span class="sd">        endpoint_suffix : str</span>
+<span class="sd">            O sufixo do endpoint da API.</span>
+<span class="sd">        params : dict, opcional</span>
+<span class="sd">            Parâmetros de consulta para a solicitação.</span>
+
+<span class="sd">        Retorna</span>
+<span class="sd">        -------</span>
+<span class="sd">        pd.DataFrame</span>
+<span class="sd">            Os dados retornados pela API como um DataFrame do pandas.</span>
+
+<span class="sd">            Exceções</span>
+<span class="sd">            --------</span>
+<span class="sd">                Se a solicitação da API falhar.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_make_request</span><span class="p">(</span><span class="s2">&quot;GET&quot;</span><span class="p">,</span> <span class="n">endpoint_suffix</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="n">params</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">!=</span> <span class="mi">200</span><span class="p">:</span>
+            <span class="n">message</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;message&quot;</span><span class="p">,</span> <span class="n">response</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Failed to fetch data from </span><span class="si">{</span><span class="n">endpoint_suffix</span><span class="si">}</span><span class="s2">: (</span><span class="si">{</span><span class="n">response</span><span class="o">.</span><span class="n">status_code</span><span class="si">}</span><span class="s2">) </span><span class="si">{</span><span class="n">message</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="n">ApiResponse</span><span class="p">(</span><span class="n">response</span><span class="p">)</span><span class="o">.</span><span class="n">items_as_dataframe</span><span class="p">()</span>
+
+<div class="viewcode-block" id="Client.bacias">
+<a class="viewcode-back" href="../../hidrowebsdk.html#hidrowebsdk.Client.bacias">[documentos]</a>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">bacias</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">codigo</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">last_update_start</span><span class="p">:</span> <span class="n">datetime</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">last_update_end</span><span class="p">:</span> <span class="n">datetime</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Busca informações sobre bacias hidrológicas.</span>
+
+<span class="sd">        Parâmetros</span>
+<span class="sd">        ----------</span>
+<span class="sd">        codigo : int, opcional</span>
+<span class="sd">            Código da bacia para filtrar resultados.</span>
+<span class="sd">        last_update_start : datetime, opcional</span>
+<span class="sd">            Data de início para filtro de última atualização.</span>
+<span class="sd">        last_update_end : datetime, opcional</span>
+<span class="sd">            Data de fim para filtro de última atualização.</span>
+
+<span class="sd">        Retorna</span>
+<span class="sd">        -------</span>
+<span class="sd">        pd.DataFrame ou None</span>
+<span class="sd">            DataFrame contendo informações da bacia, ou None se não houver dados.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">endpoint_suffix</span> <span class="o">=</span> <span class="s2">&quot;HidroBacia/v1&quot;</span>
+        <span class="n">params</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">if</span> <span class="n">codigo</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">params</span><span class="p">[</span><span class="s2">&quot;Código da Bacia&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">codigo</span>
+        <span class="k">if</span> <span class="n">last_update_start</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">params</span><span class="p">[</span><span class="s2">&quot;Data Atualização Inicial&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">last_update_start</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%Y-%m-</span><span class="si">%d</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">last_update_end</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">params</span><span class="p">[</span><span class="s2">&quot;Data Atualização Final&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">last_update_end</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%Y-%m-</span><span class="si">%d</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_df_from_api</span><span class="p">(</span><span class="n">endpoint_suffix</span><span class="p">,</span> <span class="n">params</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Client.entidades">
+<a class="viewcode-back" href="../../hidrowebsdk.html#hidrowebsdk.Client.entidades">[documentos]</a>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">entidades</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">codigo</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">last_update_start</span><span class="p">:</span> <span class="n">datetime</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">last_update_end</span><span class="p">:</span> <span class="n">datetime</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Busca informações sobre entidades.</span>
+
+<span class="sd">        Parâmetros</span>
+<span class="sd">        ----------</span>
+<span class="sd">        codigo : int, opcional</span>
+<span class="sd">            Código da entidade para filtrar resultados.</span>
+<span class="sd">        last_update_start : datetime, opcional</span>
+<span class="sd">            Data de início para filtro de última atualização (aaaa-MM-dd).</span>
+<span class="sd">        last_update_end : datetime, opcional</span>
+<span class="sd">            Data de fim para filtro de última atualização (aaaa-MM-dd).</span>
+
+<span class="sd">        Retorna</span>
+<span class="sd">        -------</span>
+<span class="sd">        pd.DataFrame ou None</span>
+<span class="sd">            DataFrame contendo informações da entidade, ou None se não houver dados.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">endpoint_suffix</span> <span class="o">=</span> <span class="s2">&quot;HidroEntidade/v1&quot;</span>
+        <span class="n">params</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">if</span> <span class="n">codigo</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">params</span><span class="p">[</span><span class="s2">&quot;Código da Entidade&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">codigo</span>
+        <span class="k">if</span> <span class="n">last_update_start</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">params</span><span class="p">[</span><span class="s2">&quot;Data Atualização Inicial (yyyy-MM-dd)&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">last_update_start</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%Y-%m-</span><span class="si">%d</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="p">)</span>
+        <span class="k">if</span> <span class="n">last_update_end</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">params</span><span class="p">[</span><span class="s2">&quot;Data Atualização Final (yyyy-MM-dd)&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">last_update_end</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span>
+                <span class="s2">&quot;%Y-%m-</span><span class="si">%d</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_df_from_api</span><span class="p">(</span><span class="n">endpoint_suffix</span><span class="p">,</span> <span class="n">params</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Client.estacoes">
+<a class="viewcode-back" href="../../hidrowebsdk.html#hidrowebsdk.Client.estacoes">[documentos]</a>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">estacoes</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">codigo</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">last_update_start</span><span class="p">:</span> <span class="n">datetime</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">last_update_end</span><span class="p">:</span> <span class="n">datetime</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">state</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">basin_code</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Busca inventário de estações de monitoramento.</span>
+
+<span class="sd">        Parâmetros</span>
+<span class="sd">        ----------</span>
+<span class="sd">        codigo : int, opcional</span>
+<span class="sd">            Código da estação para filtrar resultados.</span>
+<span class="sd">        last_update_start : datetime, opcional</span>
+<span class="sd">            Data de início para filtro de última atualização (aaaa-MM-dd).</span>
+<span class="sd">        last_update_end : datetime, opcional</span>
+<span class="sd">            Data de fim para filtro de última atualização (aaaa-MM-dd).</span>
+<span class="sd">        state : str, opcional</span>
+<span class="sd">            Estado (Unidade Federativa) para filtrar resultados.</span>
+<span class="sd">        basin_code : int, opcional</span>
+<span class="sd">            Código da bacia para filtrar resultados.</span>
+
+<span class="sd">        Retorna</span>
+<span class="sd">        -------</span>
+<span class="sd">        pd.DataFrame ou None</span>
+<span class="sd">            DataFrame contendo inventário da estação, ou None se não houver dados.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">endpoint_suffix</span> <span class="o">=</span> <span class="s2">&quot;HidroInventarioEstacoes/v1&quot;</span>
+        <span class="n">params</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">if</span> <span class="n">codigo</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">params</span><span class="p">[</span><span class="s2">&quot;Código da Estação&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">codigo</span>
+        <span class="k">if</span> <span class="n">last_update_start</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">params</span><span class="p">[</span><span class="s2">&quot;Data Atualização Inicial (yyyy-MM-dd)&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">last_update_start</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%Y-%m-</span><span class="si">%d</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="p">)</span>
+        <span class="k">if</span> <span class="n">last_update_end</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">params</span><span class="p">[</span><span class="s2">&quot;Data Atualização Final (yyyy-MM-dd)&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">last_update_end</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span>
+                <span class="s2">&quot;%Y-%m-</span><span class="si">%d</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+        <span class="k">if</span> <span class="n">state</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">params</span><span class="p">[</span><span class="s2">&quot;Unidade Federativa&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">state</span>
+
+        <span class="k">if</span> <span class="n">basin_code</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">params</span><span class="p">[</span><span class="s2">&quot;Código da Bacia&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">basin_code</span>
+        <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_df_from_api</span><span class="p">(</span><span class="n">endpoint_suffix</span><span class="p">,</span> <span class="n">params</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Client.close">
+<a class="viewcode-back" href="../../hidrowebsdk.html#hidrowebsdk.Client.close">[documentos]</a>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Fecha a sessão do cliente HTTP.</span>
+
+<span class="sd">        Este método deve ser chamado quando o cliente não for mais necessário</span>
+<span class="sd">        para fechar adequadamente as conexões HTTP subjacentes.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">aclose</span><span class="p">()</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Direitos autorais 2023, Julio Werner.</p>
+  </div>
+
+  Compilado com <a href="https://www.sphinx-doc.org/">Sphinx</a> usando um
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">tema</a>
+    fornecido por <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
