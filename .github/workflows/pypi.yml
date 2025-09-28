@@ -7,7 +7,11 @@ on:
 
 jobs:
   build:
-    name: build package
+    name: build and publish to PyPI
+    environment: pypi
+    permissions:
+      # IMPORTANT: this permission is mandatory for Trusted Publishing
+      id-token: write
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
@@ -20,18 +24,5 @@ jobs:
         run: uv sync --locked --all-extras
       - name: Build package distributions
         run: uv build
-
-  pypi-publish:
-    name: upload release to PyPI
-    needs: build
-    runs-on: ubuntu-latest
-    # Specifying a GitHub environment is optional, but strongly encouraged
-    environment: pypi
-    permissions:
-      # IMPORTANT: this permission is mandatory for Trusted Publishing
-      id-token: write
-    steps:
-      # retrieve your distributions here
-
       - name: Publish package distributions to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
