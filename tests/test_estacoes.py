@@ -92,3 +92,10 @@ async def test_estacao_codigo_filter_correct(estacao_codigo_filter):
     assert estacao_codigo_filter.iloc[0]["codigoestacao"] == codigo, (
         f"Returned estacoes do not match codigo {codigo}"
     )
+
+
+@pytest.mark.asyncio
+async def test_estacao_required_columns(estacao_codigo_filter):
+    """Test if the fetched estacao data contains the required fields."""
+    for column in required_columns:
+        assert column in estacao_codigo_filter.columns, f"Missing column: {column}"
