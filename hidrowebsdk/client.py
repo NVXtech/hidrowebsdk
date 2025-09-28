@@ -1,8 +1,8 @@
 """
 Cliente para a API Hidroweb da Agência Nacional de Águas (ANA).
 
-Este módulo fornece classes e funções para interagir com a API Hidroweb da ANA,
-permitindo acesso a dados hidrológicos e pluviométricos de estações de monitoramento.
+Este pacote fornece uma interface para acessar os dados hidrológicos
+disponíveis no Hidroweb da Agência Nacional de Águas (ANA) via API oficial.
 
 Para mais informações sobre a API, consulte:
 https://www.ana.gov.br/hidrowebservice/swagger-ui/index.html#/
@@ -24,6 +24,7 @@ import os
 import httpx
 import asyncio
 import pandas as pd
+from enum import Enum
 from datetime import datetime
 
 
@@ -34,6 +35,11 @@ HIDROWEB_PASSWORD = os.getenv("HIDROWEB_PASSWORD") or "password"
 ParamsType = (
     dict[str, int] | dict[str, str] | dict[str, datetime] | dict[str, None] | None
 )
+
+
+class DateFilter(Enum):
+    MEASUREMENT_DATE = "DATA_LEITURA"
+    LAST_UPDATE_DATE = "DATA_ULTIMA_ATUALIZACAO"
 
 
 class ApiResponse:
@@ -193,6 +199,7 @@ class Client:
         if not token:
             raise Exception("Authentication token not found in response")
         self.token = token
+        print(f"Authenticated successfully. Token: {self.token}")
 
     async def _make_request(
         self, method: str = "GET", endpoint_suffix: str = "", **kwargs
@@ -246,9 +253,9 @@ class Client:
         pd.DataFrame
             Os dados retornados pela API como um DataFrame do pandas.
 
-            Exceções
-            --------
-                Se a solicitação da API falhar.
+        Exceções
+        --------
+            Se a solicitação da API falhar.
         """
         response = await self._make_request("GET", endpoint_suffix, params=params)
         if response.status_code != 200:
@@ -263,7 +270,7 @@ class Client:
         codigo: int | None = None,
         last_update_start: datetime | None = None,
         last_update_end: datetime | None = None,
-    ) -> pd.DataFrame | None:
+    ) -> pd.DataFrame:
         """Busca informações sobre bacias hidrológicas.
 
         Parâmetros
@@ -278,7 +285,7 @@ class Client:
         Retorna
         -------
         pd.DataFrame ou None
-            DataFrame contendo informações da bacia, ou None se não houver dados.
+            DataFrame contendo informações da bacia
         """
         endpoint_suffix = "HidroBacia/v1"
         params = {}
@@ -295,7 +302,7 @@ class Client:
         codigo: int | None = None,
         last_update_start: datetime | None = None,
         last_update_end: datetime | None = None,
-    ) -> pd.DataFrame | None:
+    ) -> pd.DataFrame:
         """Busca informações sobre entidades.
 
         Parâmetros
@@ -309,8 +316,8 @@ class Client:
 
         Retorna
         -------
-        pd.DataFrame ou None
-            DataFrame contendo informações da entidade, ou None se não houver dados.
+        pd.DataFrame
+            DataFrame contendo informações da entidade
         """
         endpoint_suffix = "HidroEntidade/v1"
         params = {}
@@ -333,7 +340,7 @@ class Client:
         last_update_end: datetime | None = None,
         state: str | None = None,
         basin_code: int | None = None,
-    ) -> pd.DataFrame | None:
+    ) -> pd.DataFrame:
         """Busca inventário de estações de monitoramento.
 
         Parâmetros
@@ -352,7 +359,7 @@ class Client:
         Retorna
         -------
         pd.DataFrame ou None
-            DataFrame contendo inventário da estação, ou None se não houver dados.
+            DataFrame contendo inventário da estação.
         """
         endpoint_suffix = "HidroInventarioEstacoes/v1"
         params = {}
@@ -380,3 +387,137 @@ class Client:
         para fechar adequadamente as conexões HTTP subjacentes.
         """
         await self.client.aclose()
+
+
+# Dynamically add methods to Client class
+def create_api_method(
+    endpoint_suffix: str, method_description: str, return_description: str
+):
+    async def _generic_func(
+        self,
+        codigo: int,
+        start_datetime: datetime,
+        end_datetime: datetime,
+        filter_type: DateFilter = DateFilter.MEASUREMENT_DATE,
+        ignore_time: bool = True,
+    ) -> pd.DataFrame:
+        params = {
+            "Código da Estação": codigo,
+            "Tipo Filtro Data": filter_type.value,
+            "Data Inicial (yyyy-MM-dd)": start_datetime.strftime("%Y-%m-%d"),
+            "Data Final (yyyy-MM-dd)": end_datetime.strftime("%Y-%m-%d"),
+        }
+        if not ignore_time:
+            params["Horário Inicial (00:00:00)"] = start_datetime.strftime("%H:%M:%S")
+            params["Horário Final (23:59:59)"] = end_datetime.strftime("%H:%M:%S")
+        return await self._df_from_api(endpoint_suffix, params)
+
+    _generic_func.__doc__ = f"""{method_description}
+
+                Parâmetros
+                ----------
+                codigo : int
+                    Código da estação para a qual buscar os dados de cotas.
+                start_datetime : datetime
+                    Data e hora de início do intervalo para buscar os dados.
+                end_datetime : datetime
+                    Data e hora de fim do intervalo para buscar os dados.
+                filter_type : DateFilter, opcional
+                    Tipo de filtro de data a ser usado data da medição (FilterDate.MEASUREMENT_DATE) ou data da última atualização (FilterDate.LAST_UPDATE_DATE).
+                    Padrão para data da medição (FilterDate.MEASUREMENT_DATE).
+                ignore_time : bool, opcional
+                    Se True, ignora a parte do tempo e considera apenas a data.
+                    Nesse caso, a API considera a hora 00:00:00 para data inicial e 23:59:59 para data final.
+
+                Retorna
+                -------
+                pd.DataFrame
+                    {return_description}
+                """
+    return _generic_func
+
+
+methods_to_add = [
+    {
+        "endpoint_suffix": "HidroSerieChuva/v1",
+        "method_name": "serie_chuva",
+        "method_description": "Busca série histórica de dados de chuva para uma estação específica.",
+        "return_description": "DataFrame contendo a série histórica de dados de chuva.",
+    },
+    {
+        "endpoint_suffix": "HidroSerieCotas/v1",
+        "method_name": "serie_cotas",
+        "method_description": "Busca série histórica de dados de cotas para uma estação específica.",
+        "return_description": "DataFrame contendo a série histórica de dados de cotas.",
+    },
+    {
+        "endpoint_suffix": "HidroSerieVazao/v1",
+        "method_name": "serie_vazao",
+        "method_description": "Busca série histórica de dados de vazão para uma estação específica.",
+        "return_description": "DataFrame contendo a série histórica de dados de vazão.",
+    },
+    {
+        "endpoint_suffix": "HidroSerieSedimentos/v1",
+        "method_name": "serie_sedimentos",
+        "method_description": "Busca série histórica de dados de sedimentos para uma estação específica.",
+        "return_description": "DataFrame contendo a série histórica de dados de sedimentos.",
+    },
+    {
+        "endpoint_suffix": "HidroSerieResumoDescarga/v1",
+        "method_name": "serie_resumo_descarga",
+        "method_description": "Busca série histórica de dados de resumo de descarga para uma estação específica.",
+        "return_description": "DataFrame contendo a série histórica de dados de resumo de descarga.",
+    },
+    {
+        "endpoint_suffix": "HidroSerieQualidadeAgua/v1",
+        "method_name": "serie_qualidade_agua",
+        "method_description": "Busca série histórica de dados de qualidade da água para uma estação específica.",
+        "return_description": "DataFrame contendo a série histórica de dados de qualidade da água.",
+    },
+    {
+        "endpoint_suffix": "HidroSerieQA/v1",
+        "method_name": "serie_qualidade_agua",
+        "method_description": "Busca série histórica de dados de qualidade da água para uma estação específica.",
+        "return_description": "DataFrame contendo a série histórica de dados de qualidade da água.",
+    },
+    {
+        "endpoint_suffix": "HidroSeriePerfilTransversal/v1",
+        "method_name": "serie_perfil_transversal",
+        "method_description": "Busca série histórica de dados de perfil transversal para uma estação específica.",
+        "return_description": "DataFrame contendo a série histórica de dados de perfil transversal.",
+    },
+    {
+        "endpoint_suffix": "HidroSerieCurvaDescarga/v1",
+        "method_name": "serie_curva_descarga",
+        "method_description": "Busca série histórica de dados de curva de descarga para uma estação específica.",
+        "return_description": "DataFrame contendo a série histórica de dados de curva de descarga.",
+    },
+]
+for method in methods_to_add:
+    setattr(
+        Client,
+        method["method_name"],
+        create_api_method(
+            method["endpoint_suffix"],
+            method["method_description"],
+            method["return_description"],
+        ),
+    )
+
+if __name__ == "__main__":
+
+    async def main():
+        client = Client()
+        df_pluvi = await client.serie_vazao(
+            codigo=65011400,
+            start_datetime=datetime(2014, 1, 1, 0, 0, 0),
+            end_datetime=datetime(2014, 1, 1, 2, 0, 0),
+            ignore_time=False,
+        )
+        print(df_pluvi.columns)
+        # print value an item by line
+        for index, row in df_pluvi.iterrows():
+            for col in df_pluvi.columns:
+                print(f"{col}: {row[col]}")
+
+    asyncio.run(main())
