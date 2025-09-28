@@ -19,7 +19,7 @@ jobs:
       - name: Install build dependencies
         run: uv sync --locked --all-extras
       - name: Build package distributions
-        run: uv run python -m build --sdist --wheel --outdir dist
+        run: uv build
 
   pypi-publish:
     name: upload release to PyPI
