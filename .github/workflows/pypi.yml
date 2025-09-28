@@ -6,8 +6,24 @@ on:
       - published
 
 jobs:
+  build:
+    name: build package
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: astral-sh/setup-uv@v5
+        with:
+          python-version: "3.11"
+          enable-cache: true
+          cache-dependency-glob: uv.lock
+      - name: Install build dependencies
+        run: uv sync --locked --all-extras
+      - name: Build package distributions
+        run: uv run python -m build --sdist --wheel --outdir dist
+
   pypi-publish:
     name: upload release to PyPI
+    needs: build
     runs-on: ubuntu-latest
     # Specifying a GitHub environment is optional, but strongly encouraged
     environment: pypi

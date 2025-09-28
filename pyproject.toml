@@ -37,6 +37,6 @@ dev = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/yourusername/hidrowebsdk"
-Repository = "https://github.com/yourusername/hidrowebsdk"
-Issues = "https://github.com/yourusername/hidrowebsdk/issues"
+Homepage = "https://nvxtech.github.io/hidrowebsdk/"
+Repository = "https://github.com/NVXtech/hidrowebsdk"
+Issues = "https://github.com/NVXtech/hidrowebsdk/issues"
