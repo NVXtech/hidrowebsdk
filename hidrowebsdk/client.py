@@ -76,16 +76,6 @@ class ApiResponse:
         self.message = self.json.get("message")
         self.items = self.json.get("items")
 
-    def is_success(self) -> bool:
-        """Verifica se a resposta indica uma solicitação bem-sucedida.
-
-        Retorna
-        -------
-        bool
-            True se status_code estiver entre 200 e 299, False caso contrário.
-        """
-        return 200 <= self.status_code < 300
-
     def get_items(self) -> list | dict | None:
         """Obtém os items da resposta.
 
@@ -112,35 +102,6 @@ class ApiResponse:
             return pd.DataFrame([self.items])
         else:
             return pd.DataFrame()
-
-
-def validate_df(df: pd.DataFrame, required_columns: list[str]) -> bool:
-    """Valida se o DataFrame contém as colunas necessárias.
-
-    Parâmetros
-    ----------
-    df : pd.DataFrame
-        O DataFrame a ser validado.
-    required_columns : list de str
-        Lista de nomes de colunas que devem estar presentes no DataFrame.
-
-    Retorna
-    -------
-    bool
-        True se todas as colunas necessárias estiverem presentes.
-
-        Exceções
-        --------
-        ValueError
-            Se alguma coluna necessária estiver faltando.
-    """
-    print(df.columns)
-    print(df)
-    missing_columns = [col for col in required_columns if col not in df.columns]
-    if missing_columns:
-        raise ValueError(f"Missing required columns: {missing_columns}")
-
-    return True
 
 
 class Client:
