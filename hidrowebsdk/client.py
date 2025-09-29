@@ -378,6 +378,42 @@ class Client:
             params["Código da Bacia"] = basin_code
         return await self._df_from_api(endpoint_suffix, params)
 
+    async def estacoes_hidrosat(
+        self,
+        codigo: int | None = None,
+        last_update_start: datetime | None = None,
+        last_update_end: datetime | None = None,
+    ) -> pd.DataFrame:
+        """Busca inventário de estações de monitoramento.
+
+        Parâmetros
+        ----------
+        codigo : int, opcional
+            Código da estação para filtrar resultados.
+        last_update_start : datetime, opcional
+            Data de início para filtro de última atualização (aaaa-MM-dd).
+        last_update_end : datetime, opcional
+            Data de fim para filtro de última atualização (aaaa-MM-dd).
+
+        Retorna
+        -------
+        pd.DataFrame
+            DataFrame contendo inventário da estação.
+        """
+        endpoint_suffix = "HidrosatInventarioEstacoes/v1"
+        params = {}
+        if codigo is not None:
+            params["Código da Estação"] = codigo
+        if last_update_start is not None:
+            params["Data Atualização Inicial (yyyy-MM-dd)"] = (
+                last_update_start.strftime("%Y-%m-%d")
+            )
+        if last_update_end is not None:
+            params["Data Atualização Final (yyyy-MM-dd)"] = last_update_end.strftime(
+                "%Y-%m-%d"
+            )
+        return await self._df_from_api(endpoint_suffix, params)
+
     async def _telemetry_method(
         self,
         endpoint_suffix: str,
@@ -578,6 +614,12 @@ methods_to_add = [
         "method_name": "serie_curva_descarga",
         "method_description": "Busca série histórica de dados de curva de descarga para uma estação específica.",
         "return_description": "DataFrame contendo a série histórica de dados de curva de descarga.",
+    },
+    {
+        "endpoint_suffix": "HidrosatSerieDados/v1",
+        "method_name": "serie_hidrosat",
+        "method_description": "Busca série histórica de dados do Hidrosat para uma estação virtual específica.",
+        "return_description": "DataFrame contendo a série histórica de dados do Hidrosat.",
     },
 ]
 for method in methods_to_add:
