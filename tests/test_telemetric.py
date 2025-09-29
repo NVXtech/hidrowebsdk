@@ -93,7 +93,7 @@ async def test_date_range(series_data):
         end_date = config["end_datetime"].replace(hour=23, minute=59, second=59)
         start_date = end_date - timedelta(hours=1)
         assert start_date <= date <= end_date, (
-            f"Date {date} is out of rangei({start_date} - {end_date})"
+            f"Date {date} is out of range({start_date} - {end_date})"
         )
 
 
