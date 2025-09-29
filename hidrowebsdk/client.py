@@ -16,20 +16,58 @@ Client
 """
 
 import os
+import json
 import httpx
 import pandas as pd
-from enum import Enum
 from datetime import datetime
-
-
-BASE_URL = "https://www.ana.gov.br/hidrowebservice/EstacoesTelemetricas/"
-HIDROWEB_USER = os.getenv("HIDROWEB_USER") or "user"
-HIDROWEB_PASSWORD = os.getenv("HIDROWEB_PASSWORD") or "password"
+from enum import Enum
 
 
 class DateFilter(Enum):
     MEASUREMENT_DATE = "DATA_LEITURA"
     LAST_UPDATE_DATE = "DATA_ULTIMA_ATUALIZACAO"
+
+
+class RangeFilter(Enum):
+    FIVE_MINUTES = "MINUTO_5"
+    TEN_MINUTES = "MINUTO_10"
+    FIFTEEN_MINUTES = "MINUTO_15"
+    THIRTY_MINUTES = "MINUTO_30"
+    ONE_HOUR = "HORA_1"
+    TWO_HOURS = "HORA_2"
+    THREE_HOURS = "HORA_3"
+    FOUR_HOURS = "HORA_4"
+    FIVE_HOURS = "HORA_5"
+    SIX_HOURS = "HORA_6"
+    SEVEN_HOURS = "HORA_7"
+    EIGHT_HOURS = "HORA_8"
+    NINE_HOURS = "HORA_9"
+    TEN_HOURS = "HORA_10"
+    ELEVEN_HOURS = "HORA_11"
+    TWELVE_HOURS = "HORA_12"
+    THIRTEEN_HOURS = "HORA_13"
+    FOURTEEN_HOURS = "HORA_14"
+    FIFTEEN_HOURS = "HORA_15"
+    SIXTEEN_HOURS = "HORA_16"
+    SEVENTEEN_HOURS = "HORA_17"
+    EIGHTEEN_HOURS = "HORA_18"
+    NINETEEN_HOURS = "HORA_19"
+    TWENTY_HOURS = "HORA_20"
+    TWENTY_ONE_HOURS = "HORA_21"
+    TWENTY_TWO_HOURS = "HORA_22"
+    TWENTY_THREE_HOURS = "HORA_23"
+    TWENTY_FOUR_HOURS = "HORA_24"
+    ONE_DAY = "HORA_24"
+    TWO_DAYS = "DIA_2"
+    SEVEN_DAYS = "DIA_7"
+    FOURTEEN_DAYS = "DIA_14"
+    TWENTY_ONE_DAYS = "DIA_21"
+    THIRTY_DAYS = "DIA_30"
+
+
+BASE_URL = "https://www.ana.gov.br/hidrowebservice/EstacoesTelemetricas/"
+HIDROWEB_USER = os.getenv("HIDROWEB_USER") or "user"
+HIDROWEB_PASSWORD = os.getenv("HIDROWEB_PASSWORD") or "password"
 
 
 class ApiResponse:
@@ -61,10 +99,21 @@ class ApiResponse:
             A resposta HTTP da API.
         """
         self.status_code = response.status_code
-        self.json = response.json()
+        self.json = self.json_from_response(response)
         self.status = self.json.get("status")
         self.message = self.json.get("message")
         self.items = self.json.get("items")
+        print(self.items)
+
+    def charset_from_response(self, response: httpx.Response) -> str:
+        charset = "utf-8"  # default charset
+        content_type = response.headers.get("Content-Type", "")
+        if "charset=" in content_type:
+            charset = content_type.split("charset=")[-1]
+        return charset
+
+    def json_from_response(self, response: httpx.Response) -> dict:
+        return json.loads(response.content.decode(self.charset_from_response(response)))
 
     def get_items(self) -> list | dict | None:
         """Obtém os items da resposta.
@@ -141,15 +190,16 @@ class Client:
         url = "OAUth/v1"
         headers = {"Identificador": self.user, "Senha": self.password}
         response = await self.client.get(url, headers=headers)
+        api_response = ApiResponse(response)
         if response.status_code != 200:
-            message = response.json().get("message", "No message provided")
             raise Exception(
-                f"Authentication failed: ({response.status_code}) {message}"
+                f"Authentication failed: ({response.status_code}) {api_response.message}"
             )
-        token = response.json().get("items", {}).get("tokenautenticacao")
+        token = api_response.items.get("tokenautenticacao")
         if not token:
             raise Exception("Authentication token not found in response")
         self.token = token
+        print(f"Authenticated successfully. Token: {self.token}")
 
     async def _make_request(
         self, method: str = "GET", endpoint_suffix: str = "", **kwargs
@@ -208,12 +258,12 @@ class Client:
             Se a solicitação da API falhar.
         """
         response = await self._make_request("GET", endpoint_suffix, params=params)
+        api_response = ApiResponse(response)
         if response.status_code != 200:
-            message = response.json().get("message", response.text)
             raise Exception(
-                f"Failed to fetch data from {endpoint_suffix}: ({response.status_code}) {message}"
+                f"Failed to fetch data from {endpoint_suffix}: ({response.status_code}) {api_response.message}"
             )
-        return ApiResponse(response).items_as_dataframe()
+        return api_response.items_as_dataframe()
 
     async def bacias(
         self,
@@ -330,13 +380,104 @@ class Client:
             params["Código da Bacia"] = basin_code
         return await self._df_from_api(endpoint_suffix, params)
 
+    async def _telemetry_method(
+        self,
+        endpoint_suffix: str,
+        codigo: int,
+        end_datetime: datetime | None = None,
+        date_filter: DateFilter = DateFilter.MEASUREMENT_DATE,
+        range_filter: RangeFilter = RangeFilter.ONE_DAY,
+    ) -> pd.DataFrame:
+        params = {
+            "Código da Estação": codigo,
+            "Tipo Filtro Data": date_filter.value,
+            "Range Intervalo de busca": range_filter.value,
+        }
+        if end_datetime is not None:
+            params["Data de Busca (yyyy-MM-dd)"] = (end_datetime.strftime("%Y-%m-%d"),)
+        return await self._df_from_api(endpoint_suffix, params)
+
+    async def serie_telemetrica_detalhada(
+        self,
+        codigo: int,
+        end_datetime: datetime | None = None,
+        date_filter: DateFilter = DateFilter.MEASUREMENT_DATE,
+        range_filter: RangeFilter = RangeFilter.ONE_DAY,
+    ) -> pd.DataFrame:
+        """Busca série histórica detalhada de dados telemétricos para uma estação específica.
+
+        Parâmetros
+        ----------
+        codigo : int
+            Código da estação para a qual buscar os dados.
+        end_datetime : datetime
+            Data e hora de final do intervalo para buscar os dados.
+        filter_type : DateFilter, opcional
+            Tipo de filtro de data a ser usado data da medição (FilterDate.MEASUREMENT_DATE) ou data da última atualização (FilterDate.LAST_UPDATE_DATE).
+            Padrão para data da medição (FilterDate.MEASUREMENT_DATE).
+        range_filter : RangeFilter, opcional
+            Intervalo de busca termina no dia final (end_datetime) e inicia no dia final menos o intervalo.
+            O padrão é o intevalo de um dia (RangeFilter.ONE_DAY), isto é, será buscado dados para o dia inteiro.
+            O valor máximo permitido é de 30 dias (RangeFilter.THIRTY_DAYS) e o menor de 5 minutos (Rangefilter.FIVE_MINUTES).
+
+        Retorna
+        -------
+        pd.DataFrame
+            DataFrame contendo a série histórica detalhada de dados telemétricos.
+        """
+        endpoint_suffix = "HidroinfoanaSerieTelemetricaDetalhada/v1"
+        return await self._telemetry_method(
+            endpoint_suffix, codigo, end_datetime, date_filter, range_filter
+        )
+
+    async def serie_telemetrica_adotada(
+        self,
+        codigo: int,
+        end_datetime: datetime | None = None,
+        date_filter: DateFilter = DateFilter.MEASUREMENT_DATE,
+        range_filter: RangeFilter = RangeFilter.ONE_DAY,
+    ) -> pd.DataFrame:
+        """Busca série histórica adotada de dados telemétricos para uma estação específica(cota, nível e vazão).
+
+
+        Parâmetros
+        ----------
+        codigo : int
+            Código da estação para a qual buscar os dados.
+        end_datetime : datetime
+            Data e hora de final do intervalo para buscar os dados.
+        filter_type : DateFilter, opcional
+            Tipo de filtro de data a ser usado data da medição (FilterDate.MEASUREMENT_DATE) ou data da última atualização (FilterDate.LAST_UPDATE_DATE).
+            Padrão para data da medição (FilterDate.MEASUREMENT_DATE).
+        range_filter : RangeFilter, opcional
+            Intervalo de busca termina no dia final (end_datetime) e inicia no dia final menos o intervalo.
+            O padrão é o intevalo de um dia (RangeFilter.ONE_DAY), isto é, será buscado dados para o dia inteiro.
+            O valor máximo permitido é de 30 dias (RangeFilter.THIRTY_DAYS) e o menor de 5 minutos (Rangefilter.FIVE_MINUTES).
+
+        Retorna
+        -------
+        pd.DataFrame
+            DataFrame contendo a série histórica adotada de dados telemétricos.
+        """
+        endpoint_suffix = "HidroinfoanaSerieTelemetricaAdotada/v1"
+        return await self._telemetry_method(
+            endpoint_suffix, codigo, end_datetime, date_filter, range_filter
+        )
+
     async def close(self):
         """Fecha a sessão do cliente HTTP.
 
         Este método deve ser chamado quando o cliente não for mais necessário
         para fechar adequadamente as conexões HTTP subjacentes.
         """
+        print("Closing HTTP client session...")
         await self.client.aclose()
+
+    async def __aenter__(self):
+        return self
+
+    async def __aexit__(self, *args):
+        await self.close()
 
 
 def add_get_timeseries_method(
@@ -371,7 +512,7 @@ def add_get_timeseries_method(
                     Data e hora de início do intervalo para buscar os dados.
                 end_datetime : datetime
                     Data e hora de fim do intervalo para buscar os dados.
-                date_filter : DateFilter, opcional
+                filter_type : DateFilter, opcional
                     Tipo de filtro de data a ser usado data da medição (FilterDate.MEASUREMENT_DATE) ou data da última atualização (FilterDate.LAST_UPDATE_DATE).
                     Padrão para data da medição (FilterDate.MEASUREMENT_DATE).
                 ignore_time : bool, opcional
@@ -452,3 +593,19 @@ for method in methods_to_add:
             method["return_description"],
         ),
     )
+
+
+if __name__ == "__main__":
+    import asyncio
+
+    async def main():
+        async with Client() as client:
+            df = await client.serie_telemetrica_adotada(
+                codigo=13445000,
+                end_datetime=datetime(2025, 8, 28),
+                range_filter=RangeFilter.ONE_HOUR,
+            )
+            print(df)
+            print(df.columns.tolist())
+
+    asyncio.run(main())
