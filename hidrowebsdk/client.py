@@ -13,11 +13,6 @@ ApiResponse
     Representa uma resposta da API Hidroweb.
 Client
     Classe principal do cliente para interagir com a API.
-
-Funções
----------
-validate_df(df, required_columns)
-    Valida se um DataFrame contém as colunas necessárias.
 """
 
 import os
@@ -31,10 +26,6 @@ from datetime import datetime
 BASE_URL = "https://www.ana.gov.br/hidrowebservice/EstacoesTelemetricas/"
 HIDROWEB_USER = os.getenv("HIDROWEB_USER") or "user"
 HIDROWEB_PASSWORD = os.getenv("HIDROWEB_PASSWORD") or "password"
-
-ParamsType = (
-    dict[str, int] | dict[str, str] | dict[str, datetime] | dict[str, None] | None
-)
 
 
 class DateFilter(Enum):
@@ -350,8 +341,7 @@ class Client:
         await self.client.aclose()
 
 
-# Dynamically add methods to Client class
-def create_api_method(
+def add_get_timeseries_method(
     endpoint_suffix: str, method_description: str, return_description: str
 ):
     async def _generic_func(
@@ -378,7 +368,7 @@ def create_api_method(
                 Parâmetros
                 ----------
                 codigo : int
-                    Código da estação para a qual buscar os dados de cotas.
+                    Código da estação para a qual buscar os dados.
                 start_datetime : datetime
                     Data e hora de início do intervalo para buscar os dados.
                 end_datetime : datetime
@@ -458,7 +448,7 @@ for method in methods_to_add:
     setattr(
         Client,
         method["method_name"],
-        create_api_method(
+        add_get_timeseries_method(
             method["endpoint_suffix"],
             method["method_description"],
             method["return_description"],
