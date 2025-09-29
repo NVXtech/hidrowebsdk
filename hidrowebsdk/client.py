@@ -103,7 +103,6 @@ class ApiResponse:
         self.status = self.json.get("status")
         self.message = self.json.get("message")
         self.items = self.json.get("items")
-        print(self.items)
 
     def charset_from_response(self, response: httpx.Response) -> str:
         charset = "utf-8"  # default charset
@@ -199,7 +198,6 @@ class Client:
         if not token:
             raise Exception("Authentication token not found in response")
         self.token = token
-        print(f"Authenticated successfully. Token: {self.token}")
 
     async def _make_request(
         self, method: str = "GET", endpoint_suffix: str = "", **kwargs
@@ -470,7 +468,6 @@ class Client:
         Este método deve ser chamado quando o cliente não for mais necessário
         para fechar adequadamente as conexões HTTP subjacentes.
         """
-        print("Closing HTTP client session...")
         await self.client.aclose()
 
     async def __aenter__(self):
@@ -593,19 +590,3 @@ for method in methods_to_add:
             method["return_description"],
         ),
     )
-
-
-if __name__ == "__main__":
-    import asyncio
-
-    async def main():
-        async with Client() as client:
-            df = await client.serie_telemetrica_adotada(
-                codigo=13445000,
-                end_datetime=datetime(2025, 8, 28),
-                range_filter=RangeFilter.ONE_HOUR,
-            )
-            print(df)
-            print(df.columns.tolist())
-
-    asyncio.run(main())
