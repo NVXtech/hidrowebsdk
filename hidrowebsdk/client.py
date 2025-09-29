@@ -13,16 +13,10 @@ ApiResponse
     Representa uma resposta da API Hidroweb.
 Client
     Classe principal do cliente para interagir com a API.
-
-Funções
----------
-validate_df(df, required_columns)
-    Valida se um DataFrame contém as colunas necessárias.
 """
 
 import os
 import httpx
-import asyncio
 import pandas as pd
 from enum import Enum
 from datetime import datetime
@@ -31,10 +25,6 @@ from datetime import datetime
 BASE_URL = "https://www.ana.gov.br/hidrowebservice/EstacoesTelemetricas/"
 HIDROWEB_USER = os.getenv("HIDROWEB_USER") or "user"
 HIDROWEB_PASSWORD = os.getenv("HIDROWEB_PASSWORD") or "password"
-
-ParamsType = (
-    dict[str, int] | dict[str, str] | dict[str, datetime] | dict[str, None] | None
-)
 
 
 class DateFilter(Enum):
@@ -76,16 +66,6 @@ class ApiResponse:
         self.message = self.json.get("message")
         self.items = self.json.get("items")
 
-    def is_success(self) -> bool:
-        """Verifica se a resposta indica uma solicitação bem-sucedida.
-
-        Retorna
-        -------
-        bool
-            True se status_code estiver entre 200 e 299, False caso contrário.
-        """
-        return 200 <= self.status_code < 300
-
     def get_items(self) -> list | dict | None:
         """Obtém os items da resposta.
 
@@ -112,35 +92,6 @@ class ApiResponse:
             return pd.DataFrame([self.items])
         else:
             return pd.DataFrame()
-
-
-def validate_df(df: pd.DataFrame, required_columns: list[str]) -> bool:
-    """Valida se o DataFrame contém as colunas necessárias.
-
-    Parâmetros
-    ----------
-    df : pd.DataFrame
-        O DataFrame a ser validado.
-    required_columns : list de str
-        Lista de nomes de colunas que devem estar presentes no DataFrame.
-
-    Retorna
-    -------
-    bool
-        True se todas as colunas necessárias estiverem presentes.
-
-        Exceções
-        --------
-        ValueError
-            Se alguma coluna necessária estiver faltando.
-    """
-    print(df.columns)
-    print(df)
-    missing_columns = [col for col in required_columns if col not in df.columns]
-    if missing_columns:
-        raise ValueError(f"Missing required columns: {missing_columns}")
-
-    return True
 
 
 class Client:
@@ -389,8 +340,7 @@ class Client:
         await self.client.aclose()
 
 
-# Dynamically add methods to Client class
-def create_api_method(
+def add_get_timeseries_method(
     endpoint_suffix: str, method_description: str, return_description: str
 ):
     async def _generic_func(
@@ -417,7 +367,7 @@ def create_api_method(
                 Parâmetros
                 ----------
                 codigo : int
-                    Código da estação para a qual buscar os dados de cotas.
+                    Código da estação para a qual buscar os dados.
                 start_datetime : datetime
                     Data e hora de início do intervalo para buscar os dados.
                 end_datetime : datetime
@@ -497,27 +447,9 @@ for method in methods_to_add:
     setattr(
         Client,
         method["method_name"],
-        create_api_method(
+        add_get_timeseries_method(
             method["endpoint_suffix"],
             method["method_description"],
             method["return_description"],
         ),
     )
-
-if __name__ == "__main__":
-
-    async def main():
-        client = Client()
-        df_pluvi = await client.serie_vazao(
-            codigo=65011400,
-            start_datetime=datetime(2014, 1, 1, 0, 0, 0),
-            end_datetime=datetime(2014, 1, 1, 2, 0, 0),
-            ignore_time=False,
-        )
-        print(df_pluvi.columns)
-        # print value an item by line
-        for index, row in df_pluvi.iterrows():
-            for col in df_pluvi.columns:
-                print(f"{col}: {row[col]}")
-
-    asyncio.run(main())
