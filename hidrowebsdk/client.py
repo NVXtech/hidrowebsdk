@@ -17,7 +17,6 @@ Client
 
 import os
 import httpx
-import asyncio
 import pandas as pd
 from enum import Enum
 from datetime import datetime
