@@ -15,7 +15,7 @@ Exemplo
     >>> client = Client()
 """
 
-from .client import Client
+from .client import Client, RangeFilter, DateFilter
 
 __version__ = "0.1.0"
 __author__ = "NVXtech"
@@ -23,4 +23,6 @@ __email__ = "julio.werner@nvxtech.com.br"
 
 __all__ = [
     "Client",
+    "RangeFilter",
+    "DateFilter",
 ]
