@@ -454,21 +454,3 @@ for method in methods_to_add:
             method["return_description"],
         ),
     )
-
-if __name__ == "__main__":
-
-    async def main():
-        client = Client()
-        df_pluvi = await client.serie_vazao(
-            codigo=65011400,
-            start_datetime=datetime(2014, 1, 1, 0, 0, 0),
-            end_datetime=datetime(2014, 1, 1, 2, 0, 0),
-            ignore_time=False,
-        )
-        print(df_pluvi.columns)
-        # print value an item by line
-        for index, row in df_pluvi.iterrows():
-            for col in df_pluvi.columns:
-                print(f"{col}: {row[col]}")
-
-    asyncio.run(main())
