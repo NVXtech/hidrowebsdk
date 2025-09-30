@@ -263,6 +263,63 @@ class Client:
             )
         return api_response.items_as_dataframe()
 
+    async def estados(
+        self,
+        codigo: int | None = None,
+        last_update_start: datetime | None = None,
+        last_update_end: datetime | None = None,
+    ) -> pd.DataFrame:
+        """Busca informações sobre estados (Unidades Federativas).
+
+        Parâmetros
+        ----------
+        codigo : int, opcional
+            Código do estado para filtrar resultados.
+        last_update_start : datetime, opcional
+            Data de início para filtro de última atualização.
+        last_update_end : datetime, opcional
+            Data de fim para filtro de última atualização.
+
+        Retorna
+        -------
+        pd.DataFrame
+            DataFrame contendo informações dos estados.
+        """
+        endpoint_suffix = "HidroUF/v1"
+        return await self._df_from_api(endpoint_suffix)
+
+    async def municipios(
+        self,
+        codigo: int | None = None,
+        last_update_start: datetime | None = None,
+        last_update_end: datetime | None = None,
+    ) -> pd.DataFrame:
+        """Busca informações sobre municípios.
+
+        Parâmetros
+        ----------
+        codigo : int, opcional
+            Código do município para filtrar resultados.
+        last_update_start : datetime, opcional
+            Data de início para filtro de última atualização.
+        last_update_end : datetime, opcional
+            Data de fim para filtro de última atualização.
+
+        Retorna
+        -------
+        pd.DataFrame ou None
+            DataFrame contendo informações do município
+        """
+        endpoint_suffix = "HidroMunicipio/v1"
+        params = {}
+        if codigo is not None:
+            params["Código do Município"] = codigo
+        if last_update_start is not None:
+            params["Data Atualização Inicial"] = last_update_start.strftime("%Y-%m-%d")
+        if last_update_end is not None:
+            params["Data Atualização Final"] = last_update_end.strftime("%Y-%m-%d")
+        return await self._df_from_api(endpoint_suffix, params)
+
     async def bacias(
         self,
         codigo: int | None = None,
@@ -289,6 +346,70 @@ class Client:
         params = {}
         if codigo is not None:
             params["Código da Bacia"] = codigo
+        if last_update_start is not None:
+            params["Data Atualização Inicial"] = last_update_start.strftime("%Y-%m-%d")
+        if last_update_end is not None:
+            params["Data Atualização Final"] = last_update_end.strftime("%Y-%m-%d")
+        return await self._df_from_api(endpoint_suffix, params)
+
+    async def sub_bacias(
+        self,
+        codigo: int | None = None,
+        last_update_start: datetime | None = None,
+        last_update_end: datetime | None = None,
+    ) -> pd.DataFrame:
+        """Busca informações sobre sub-bacias hidrológicas.
+
+        Parâmetros
+        ----------
+        codigo : int, opcional
+            Código da sub-bacia para filtrar resultados.
+        last_update_start : datetime, opcional
+            Data de início para filtro de última atualização.
+        last_update_end : datetime, opcional
+            Data de fim para filtro de última atualização.
+
+        Retorna
+        -------
+        pd.DataFrame ou None
+            DataFrame contendo informações da sub-bacia
+        """
+        endpoint_suffix = "HidroSubBacia/v1"
+        params = {}
+        if codigo is not None:
+            params["Código da Sub-Bacia"] = codigo
+        if last_update_start is not None:
+            params["Data Atualização Inicial"] = last_update_start.strftime("%Y-%m-%d")
+        if last_update_end is not None:
+            params["Data Atualização Final"] = last_update_end.strftime("%Y-%m-%d")
+        return await self._df_from_api(endpoint_suffix, params)
+
+    async def rios(
+        self,
+        codigo: int | None = None,
+        last_update_start: datetime | None = None,
+        last_update_end: datetime | None = None,
+    ) -> pd.DataFrame:
+        """Busca informações sobre rios.
+
+        Parâmetros
+        ----------
+        codigo : int, opcional
+            Código do rio para filtrar resultados.
+        last_update_start : datetime, opcional
+            Data de início para filtro de última atualização.
+        last_update_end : datetime, opcional
+            Data de fim para filtro de última atualização.
+
+        Retorna
+        -------
+        pd.DataFrame ou None
+            DataFrame contendo informações do rio
+        """
+        endpoint_suffix = "HidroRio/v1"
+        params = {}
+        if codigo is not None:
+            params["Código do Rio"] = codigo
         if last_update_start is not None:
             params["Data Atualização Inicial"] = last_update_start.strftime("%Y-%m-%d")
         if last_update_end is not None:
@@ -724,13 +845,7 @@ if __name__ == "__main__":
     async def main():
         async with Client() as client:
             await client.authenticate()
-            print(client.token)
-            stations = [30659600, 13445000]
-            df = await client.serie_telemetrica_detalhada_multiplas_estacoes(
-                codigos=stations,
-                end_datetime=datetime(2025, 8, 28),
-                range_filter=RangeFilter.ONE_HOUR,
-            )
+            df = await client.sub_bacias()
             print(df)
             print(df.columns.tolist())
 
