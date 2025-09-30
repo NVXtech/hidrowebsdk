@@ -1,7 +1,7 @@
 import pytest_asyncio
 import pytest
 
-codigo = "1"
+codigo = "2"
 required_columns = [
     "Data_Ultima_Alteracao",
     "Estado_Codigo_IBGE",
