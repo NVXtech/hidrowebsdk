@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "hidrowebsdk"
-version = "0.1.0"
+version = "0.2.0"
 description = "Python SDK to communicate with ANA's HidroWeb API for hydrological and pluviometric data"
 authors = [
     {name = "Julio Werner", email = "julio.werner@nvxtech.com.br"}
@@ -40,3 +40,4 @@ dev = [
 Homepage = "https://nvxtech.github.io/hidrowebsdk/"
 Repository = "https://github.com/NVXtech/hidrowebsdk"
 Issues = "https://github.com/NVXtech/hidrowebsdk/issues"
+Documentation = "https://nvxtech.github.io/hidrowebsdk/"
