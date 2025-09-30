@@ -14,7 +14,6 @@ HidroWebSDK é um SDK Python para simplificar e automatizar o download de dados 
 - [Recursos](#recursos)
 - [Instalação](#instalação)
 - [Uso](#uso)
-- [Referência da API](#referência-da-api)
 - [Contribuição](#contribuição)
 - [Testes](#testes)
 - [Licença](#licença)
