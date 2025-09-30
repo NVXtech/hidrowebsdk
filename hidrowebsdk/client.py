@@ -431,6 +431,24 @@ class Client:
             params["Data de Busca (yyyy-MM-dd)"] = (end_datetime.strftime("%Y-%m-%d"),)
         return await self._df_from_api(endpoint_suffix, params)
 
+    async def _telemetry_multi_station(
+        self,
+        endpoint_suffix: str,
+        codigos: list[int],
+        end_datetime: datetime | None = None,
+        date_filter: DateFilter = DateFilter.MEASUREMENT_DATE,
+        range_filter: RangeFilter = RangeFilter.ONE_DAY,
+    ) -> pd.DataFrame:
+        params = {
+            "Codigos_Estacoes": ",".join(map(str, codigos)),
+            "Tipo Filtro Data": date_filter.value,
+            "Range Intervalo de busca": range_filter.value,
+        }
+        if end_datetime is not None:
+            params["Data de Busca (yyyy-MM-dd)"] = (end_datetime.strftime("%Y-%m-%d"),)
+        print(params)
+        return await self._df_from_api(endpoint_suffix, params)
+
     async def serie_telemetrica_detalhada(
         self,
         codigo: int,
@@ -496,6 +514,72 @@ class Client:
         endpoint_suffix = "HidroinfoanaSerieTelemetricaAdotada/v1"
         return await self._telemetry_method(
             endpoint_suffix, codigo, end_datetime, date_filter, range_filter
+        )
+
+    async def serie_telemetrica_adotada_multiplas_estacoes(
+        self,
+        codigos: list[int],
+        end_datetime: datetime | None = None,
+        date_filter: DateFilter = DateFilter.MEASUREMENT_DATE,
+        range_filter: RangeFilter = RangeFilter.ONE_DAY,
+    ) -> pd.DataFrame:
+        """Busca série histórica detalhada de dados telemétricos para múltiplas estações específicas.
+
+        Parâmetros
+        ----------
+        codigos : list[int]
+            Lista de códigos das estações para as quais buscar os dados.
+        end_datetime : datetime
+            Data e hora de final do intervalo para buscar os dados.
+        filter_type : DateFilter, opcional
+            Tipo de filtro de data a ser usado data da medição (FilterDate.MEASUREMENT_DATE) ou data da última atualização (FilterDate.LAST_UPDATE_DATE).
+            Padrão para data da medição (FilterDate.MEASUREMENT_DATE).
+        range_filter : RangeFilter, opcional
+            Intervalo de busca termina no dia final (end_datetime) e inicia no dia final menos o intervalo.
+            O padrão é o intevalo de um dia (RangeFilter.ONE_DAY), isto é, será buscado dados para o dia inteiro.
+            O valor máximo permitido é de 30 dias (RangeFilter.THIRTY_DAYS) e o menor de 5 minutos (Rangefilter.FIVE_MINUTES).
+
+        Retorna
+        -------
+        pd.DataFrame
+            DataFrame contendo a série histórica detalhada de dados telemétricos.
+        """
+        endpoint_suffix = "HidroinfoanaSerieTelemetricaAdotada/v2"
+        return await self._telemetry_multi_station(
+            endpoint_suffix, codigos, end_datetime, date_filter, range_filter
+        )
+
+    async def serie_telemetrica_detalhada_multiplas_estacoes(
+        self,
+        codigos: list[int],
+        end_datetime: datetime | None = None,
+        date_filter: DateFilter = DateFilter.MEASUREMENT_DATE,
+        range_filter: RangeFilter = RangeFilter.ONE_DAY,
+    ) -> pd.DataFrame:
+        """Busca série histórica adotada de dados telemétricos para múltiplas estações específicas.
+
+        Parâmetros
+        ----------
+        codigos : list[int]
+            Lista de códigos das estações para as quais buscar os dados.
+        end_datetime : datetime
+            Data e hora de final do intervalo para buscar os dados.
+        filter_type : DateFilter, opcional
+            Tipo de filtro de data a ser usado data da medição (FilterDate.MEASUREMENT_DATE) ou data da última atualização (FilterDate.LAST_UPDATE_DATE).
+            Padrão para data da medição (FilterDate.MEASUREMENT_DATE).
+        range_filter : RangeFilter, opcional
+            Intervalo de busca termina no dia final (end_datetime) e inicia no dia final menos o intervalo.
+            O padrão é o intevalo de um dia (RangeFilter.ONE_DAY), isto é, será buscado dados para o dia inteiro.
+            O valor máximo permitido é de 30 dias (RangeFilter.THIRTY_DAYS) e o menor de 5 minutos (Rangefilter.FIVE_MINUTES).
+
+        Retorna
+        -------
+        pd.DataFrame
+            DataFrame contendo a série histórica adotada de dados telemétricos.
+        """
+        endpoint_suffix = "HidroinfoanaSerieTelemetricaDetalhada/v2"
+        return await self._telemetry_multi_station(
+            endpoint_suffix, codigos, end_datetime, date_filter, range_filter
         )
 
     async def close(self):
@@ -632,3 +716,22 @@ for method in methods_to_add:
             method["return_description"],
         ),
     )
+
+
+if __name__ == "__main__":
+    import asyncio
+
+    async def main():
+        async with Client() as client:
+            await client.authenticate()
+            print(client.token)
+            stations = [30659600, 13445000]
+            df = await client.serie_telemetrica_detalhada_multiplas_estacoes(
+                codigos=stations,
+                end_datetime=datetime(2025, 8, 28),
+                range_filter=RangeFilter.ONE_HOUR,
+            )
+            print(df)
+            print(df.columns.tolist())
+
+    asyncio.run(main())
