@@ -388,7 +388,7 @@ class Client:
 
         Parâmetros
         ----------
-        codigo : int, opcional
+        codigo : str, opcional
             Código da estação para filtrar resultados.
         last_update_start : datetime, opcional
             Data de início para filtro de última atualização (aaaa-MM-dd).
