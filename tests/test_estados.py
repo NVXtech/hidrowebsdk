@@ -33,7 +33,7 @@ async def test_estados_not_empty(estados_result):
 
 @pytest_asyncio.fixture(scope="module")
 async def estados_codigo_filter(client):
-    """Fixture to estados by codigo."""
+    """Fixture to fetch estados by codigo."""
     return await client.estados(codigo=codigo)
 
 
