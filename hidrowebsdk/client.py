@@ -286,7 +286,14 @@ class Client:
             DataFrame contendo informações dos estados.
         """
         endpoint_suffix = "HidroUF/v1"
-        return await self._df_from_api(endpoint_suffix)
+        params = {}
+        if codigo is not None:
+            params["Código da UF"] = codigo
+        if last_update_start is not None:
+            params["Data Atualização Inicial"] = last_update_start.strftime("%Y-%m-%d")
+        if last_update_end is not None:
+            params["Data Atualização Final"] = last_update_end.strftime("%Y-%m-%d")
+        return await self._df_from_api(endpoint_suffix, params)
 
     async def municipios(
         self,
