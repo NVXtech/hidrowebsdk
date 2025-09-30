@@ -5,8 +5,8 @@ from hidrowebsdk import RangeFilter
 
 test_configs = [
     {
-        "method_name": "serie_telemetrica_adotada",
-        "codigo": 13445000,
+        "method_name": "serie_telemetrica_adotada_multiplas_estacoes",
+        "codigos": [13445000, 14990000],
         "end_datetime": datetime(2025, 8, 28),
         "range_filter": RangeFilter.ONE_HOUR,
         "required_fields": [
@@ -22,8 +22,8 @@ test_configs = [
         ],
     },
     {
-        "method_name": "serie_telemetrica_detalhada",
-        "codigo": 13445000,
+        "method_name": "serie_telemetrica_detalhada_multiplas_estacoes",
+        "codigos": [13445000, 14990000],
         "end_datetime": datetime(2025, 8, 28),
         "range_filter": RangeFilter.ONE_HOUR,
         "required_fields": [
@@ -61,7 +61,7 @@ test_configs = [
 async def series_data(request, client):
     config = request.param
     df = await getattr(client, config["method_name"])(
-        codigo=config["codigo"],
+        codigos=config["codigos"],
         end_datetime=config["end_datetime"],
         range_filter=config["range_filter"],
     )
@@ -72,15 +72,17 @@ async def series_data(request, client):
 async def test_not_empty(series_data):
     config, df = series_data
     assert not df.empty, (
-        f"No data found for {config['method_name']} with codigo {config['codigo']}"
+        f"No data found for {config['method_name']} with codigo {config['codigos']}"
     )
 
 
 @pytest.mark.asyncio
 async def test_code_filter(series_data):
     config, df = series_data
-    assert all(df["codigoestacao"] == str(config["codigo"])), (
-        f"Some rows do not match codigo {config['codigo']}"
+    codigos = df["codigoestacao"].unique()
+    codigos = [int(code) for code in codigos]
+    assert all(code in config["codigos"] for code in codigos), (
+        f"Data contains unexpected codigos: {codigos}, expected: {config['codigos']}"
     )
 
 
