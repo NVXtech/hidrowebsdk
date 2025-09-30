@@ -844,16 +844,3 @@ for method in methods_to_add:
             method["return_description"],
         ),
     )
-
-
-if __name__ == "__main__":
-    import asyncio
-
-    async def main():
-        async with Client() as client:
-            await client.authenticate()
-            df = await client.sub_bacias()
-            print(df)
-            print(df.columns.tolist())
-
-    asyncio.run(main())
