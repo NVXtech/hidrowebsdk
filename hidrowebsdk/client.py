@@ -380,7 +380,7 @@ class Client:
 
     async def estacoes_hidrosat(
         self,
-        codigo: int | None = None,
+        codigo: str = "",
         last_update_start: datetime | None = None,
         last_update_end: datetime | None = None,
     ) -> pd.DataFrame:
@@ -402,7 +402,7 @@ class Client:
         """
         endpoint_suffix = "HidrosatInventarioEstacoes/v1"
         params = {}
-        if codigo is not None:
+        if codigo:
             params["Código da Estação"] = codigo
         if last_update_start is not None:
             params["Data Atualização Inicial (yyyy-MM-dd)"] = (
