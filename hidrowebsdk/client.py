@@ -15,12 +15,14 @@ Client
     Classe principal do cliente para interagir com a API.
 """
 
-import os
 import json
-import httpx
-import pandas as pd
+import os
 from datetime import datetime
 from enum import Enum
+
+import httpx
+import pandas as pd
+from httpx_limiter import AsyncRateLimitedTransport, Rate
 
 
 class DateFilter(Enum):
@@ -58,11 +60,11 @@ class RangeFilter(Enum):
     TWENTY_THREE_HOURS = "HORA_23"
     TWENTY_FOUR_HOURS = "HORA_24"
     ONE_DAY = "HORA_24"
-    TWO_DAYS = "DIA_2"
-    SEVEN_DAYS = "DIA_7"
-    FOURTEEN_DAYS = "DIA_14"
-    TWENTY_ONE_DAYS = "DIA_21"
-    THIRTY_DAYS = "DIA_30"
+    TWO_DAYS = "DIAS_2"
+    SEVEN_DAYS = "DIAS_7"
+    FOURTEEN_DAYS = "DIAS_14"
+    TWENTY_ONE_DAYS = "DIAS_21"
+    THIRTY_DAYS = "DIAS_30"
 
 
 BASE_URL = "https://www.ana.gov.br/hidrowebservice/EstacoesTelemetricas/"
@@ -161,7 +163,7 @@ class Client:
         O token de autenticação obtido após o login.
     """
 
-    def __init__(self, user=HIDROWEB_USER, password=HIDROWEB_PASSWORD):
+    def __init__(self, user=HIDROWEB_USER, password=HIDROWEB_PASSWORD, rate_limit=10):
         """Inicializa o Cliente com credenciais de usuário.
 
         Parâmetros
@@ -173,7 +175,13 @@ class Client:
         """
         self.user: str = user
         self.password: str = password
-        self.client = httpx.AsyncClient(base_url=BASE_URL)
+        self.client = httpx.AsyncClient(
+            base_url=BASE_URL,
+            transport=AsyncRateLimitedTransport.create(
+                Rate.create(magnitude=rate_limit)
+            ),
+            timeout=httpx.Timeout(30.0, read=60.0),
+        )
         self.token = None
 
     async def authenticate(self):
@@ -802,12 +810,6 @@ methods_to_add = [
         "method_name": "serie_resumo_descarga",
         "method_description": "Busca série histórica de dados de resumo de descarga para uma estação específica.",
         "return_description": "DataFrame contendo a série histórica de dados de resumo de descarga.",
-    },
-    {
-        "endpoint_suffix": "HidroSerieQualidadeAgua/v1",
-        "method_name": "serie_qualidade_agua",
-        "method_description": "Busca série histórica de dados de qualidade da água para uma estação específica.",
-        "return_description": "DataFrame contendo a série histórica de dados de qualidade da água.",
     },
     {
         "endpoint_suffix": "HidroSerieQA/v1",
