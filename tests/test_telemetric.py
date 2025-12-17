@@ -1,6 +1,8 @@
+from datetime import datetime, timedelta
+
 import pytest
 import pytest_asyncio
-from datetime import datetime, timedelta
+
 from hidrowebsdk import RangeFilter
 
 test_configs = [
