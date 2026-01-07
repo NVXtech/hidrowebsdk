@@ -234,7 +234,7 @@ class Client:
             await self.authenticate()
         headers["Authorization"] = f"Bearer {self.token}"
         response = await self.client.request(method, url, headers=headers, **kwargs)
-        if response.status_code == 401:
+        if response.status_code == 401 or response.status_code == 500:
             await self.authenticate()
             headers["Authorization"] = f"Bearer {self.token}"
             response = await self.client.request(method, url, headers=headers, **kwargs)
@@ -564,7 +564,7 @@ class Client:
             "Range Intervalo de busca": range_filter.value,
         }
         if end_datetime is not None:
-            params["Data de Busca (yyyy-MM-dd)"] = (end_datetime.strftime("%Y-%m-%d"),)
+            params["Data de Busca (yyyy-MM-dd)"] = end_datetime.strftime("%Y-%m-%d")
         return await self._df_from_api(endpoint_suffix, params)
 
     async def _telemetry_multi_station(
@@ -581,8 +581,7 @@ class Client:
             "Range Intervalo de busca": range_filter.value,
         }
         if end_datetime is not None:
-            params["Data de Busca (yyyy-MM-dd)"] = (end_datetime.strftime("%Y-%m-%d"),)
-        print(params)
+            params["Data de Busca (yyyy-MM-dd)"] = end_datetime.strftime("%Y-%m-%d")
         return await self._df_from_api(endpoint_suffix, params)
 
     async def serie_telemetrica_detalhada(
